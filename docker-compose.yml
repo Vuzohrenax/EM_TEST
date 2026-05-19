@@ -1,0 +1,25 @@
+services:
+  web-app:
+    build: ./backend
+    container_name: test_container
+    # Порты НЕ публикуются (ports: отсутствует) — доступ только из сети
+    networks:
+      - test_network
+
+  # Nginx в качестве единой точки входа
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx_proxy_container
+    restart: always
+    ports:
+      - "80:80" # Открываем порт 80 для внешнего мира
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z #Z - для запуска на fedora. А то я поломался на SElinux.
+    depends_on:
+      - web-app
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge
